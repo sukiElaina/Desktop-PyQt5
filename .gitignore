@@ -4,3 +4,5 @@ static
 __pycache__
 config.json
 output.wav
+build
+dist

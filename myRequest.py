@@ -47,15 +47,11 @@ class AIRequest:
                     self.request_body["messages"] = self.request_body["messages"][-(self.message_max - len(new_messages)):]
 
                 self.request_body["messages"].extend(new_messages)
-
-                print("get_Response:", reply)
                 return reply
             else:
-                print("AI回复为空")
                 return ""
         
         except requests.exceptions.RequestException as e:
-            print(f"请求失败: {e}")
             return ""
 
     def load_config(self):
@@ -87,11 +83,11 @@ class TTSRequest:
             try:
                 os.remove('output.wav')
             except Exception as e:
-                print(f"无法删除文件: {e}")
+                pass
 
         # 写入新文件
         try:
             with open('output.wav', 'wb') as f:
                 f.write(self.response.content)
         except Exception as e:
-            print(f"写入文件失败: {e}")
+            pass

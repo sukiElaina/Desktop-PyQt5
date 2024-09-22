@@ -1,9 +1,10 @@
 import os
 import random
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QLineEdit, QWidget
+import time
+from PyQt5.QtWidgets import QMainWindow, QPushButton,QMenu,QAction,QSystemTrayIcon, QLineEdit,QApplication
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QTimer, Qt, QPoint, QUrl, QThread
-from PyQt5.QtGui import QPainter, QPixmap,QFont
+from PyQt5.QtGui import QPainter, QPixmap,QFont,QIcon
 from myRequest import AIRequest, TTSRequest
 class AIThread(QThread):
     def __init__(self, input_text, ai_request,tts,player1,tts_path):
@@ -30,40 +31,45 @@ class AIThread(QThread):
 class Pix(QMainWindow):
     def __init__(self):
         super().__init__()
-
+        self.setWindowIcon(QIcon("E:\\Computer\\Desktop\\static\\icon.png"))  # 设置窗口图标
         self.setWindowTitle("Pix")  # 设置窗口标题
         self.resize(800, 600)  # 设置窗口大小
-
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool)  # 设置窗口置顶
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setMouseTracking(True)
+        myfont = QFont("华文新魏", 10)  # 设置字体和大小
         # 创建按钮和文本输入框
-        self.button = QPushButton("发送", self)
-        self.button.setGeometry(350, 60, 100, 30)  # 设置按钮的位置和大小
+        # self.button = QPushButton("发送", self)
+        # self.button.setFont(myfont)  # 设置字体和大小
+        # self.button.setGeometry(350, 60, 100, 30)  # 设置按钮的位置和大小
 
         self.text_input = QLineEdit(self)  # 创建文本输入框并设置默认内容
         self.text_input.setPlaceholderText("你想对芙宁娜说什么？")  # 设置提示文字
         self.text_input.setGeometry(350, 10, 150, 35)  # 设置文本框的位置和大小
-        self.text_input.setFont(QFont("华文新魏", 10))  # 设置字体和大小
+        self.text_input.setFont(myfont)  # 设置字体和大小
 
         # 设置基本属性
         self.timer = QTimer(self)
         self.idx = 1
-        self.idx_min = 1
         self.idx_max = 625
-        self.image_path = "E:\\Computer\\Desktop\\static\\2"
+        self.image_path_base = "E:\\Computer\\Desktop\\static\\movies"
+        self.image_path = os.path.join(self.image_path_base, "initial")
         self.tts_path = "E:\\Computer\\Desktop"
         self.player = QMediaPlayer(self)
         self.player1 = QMediaPlayer(self)
         self.ai = AIRequest()
         self.tts = TTSRequest()
         self.movie_state = 0
-        self.is_circle = True
+        self.is_circle = False
         self.is_music = True
+        self.folers=self.read_file_folders()
+        print(self.folers)
 
-        random.seed()
-        self.setWindowFlag(Qt.FramelessWindowHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setMouseTracking(True)
+        random.seed(time.time())
+        
+        self.text_input.returnPressed.connect(self.on_button_click)
 
-        self.button.clicked.connect(self.on_button_click)
+        # self.button.clicked.connect(self.on_button_click)
 
         self.timer.setInterval(32)
         self.timer.timeout.connect(self.movie_timer)
@@ -74,6 +80,47 @@ class Pix(QMainWindow):
         self.volume_timer.setInterval(100)  # 每100毫秒检查一次
         self.volume_timer.timeout.connect(self.check_player1_status)
         self.volume_timer.start()
+        
+        
+        # 初始化托盘图标
+        self.init_tray_icon()
+        
+        
+    def init_tray_icon(self):
+        # 创建系统托盘图标
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QIcon("E:\\Computer\\Desktop\\static\\icon.png"))
+
+        # 创建托盘菜单
+        tray_menu = QMenu()
+        
+        # 添加打开和退出选项
+        hide_action = QAction("隐藏", self)
+        hide_action.triggered.connect(self.hide)  # 点击后隐藏窗口
+        
+        show_action = QAction("显示", self)
+        show_action.triggered.connect(self.show)  # 点击后隐藏窗口
+
+        exit_action = QAction("退出", self)
+        exit_action.triggered.connect(QApplication.instance().quit)  # 点击后退出应用
+
+        tray_menu.addAction(hide_action)
+        tray_menu.addAction(show_action)
+        tray_menu.addAction(exit_action)
+
+        # 将菜单添加到系统托盘
+        self.tray_icon.setContextMenu(tray_menu)
+
+        # 显示系统托盘图标
+        self.tray_icon.show()
+
+        # 连接系统托盘图标的双击事件
+        self.tray_icon.activated.connect(self.tray_icon_activated)
+
+    def tray_icon_activated(self, reason):
+        if reason == QSystemTrayIcon.DoubleClick:
+            self.show()  # 双击时显示窗口
+
     def check_player1_status(self):
         # 检查 player1 是否在播放
         if self.player1.state() == QMediaPlayer.PlayingState:
@@ -88,12 +135,10 @@ class Pix(QMainWindow):
             media_content = QMediaContent(QUrl.fromLocalFile(os.path.join(self.image_path, "music.wav")))
             self.player.setMedia(media_content)
             self.player.play()
-            print("play music")
 
     def stop_music(self):
         if self.is_music:
             self.player.stop()
-            print("stop music")
 
     def movie_timer(self):
         if self.is_circle:
@@ -119,9 +164,9 @@ class Pix(QMainWindow):
         if self.idx < self.idx_max:
             if self.movie_state != 1:
                 self.movie_state = 1
-            if self.idx == 1 or self.is_music:
+            if self.idx == 1 and self.is_music:
                 self.play_music()
-            self.idx = (self.idx + 1) % self.idx_max + 1
+            self.idx = self.idx% self.idx_max + 1
             self.pixmap = QPixmap(os.path.join(self.image_path, f"{self.idx}.png"))
             self.update()
         else:
@@ -129,7 +174,18 @@ class Pix(QMainWindow):
             self.is_music = False
             if self.movie_state != 0:
                 self.movie_state = 0
-
+            self.movie_single_end()  
+            
+            
+    def movie_single_end(self):
+        random_key=random.choice(list(self.folers.keys()))
+        self.image_path = os.path.join(self.image_path_base, random_key)
+        self.idx = 1
+        self.idx_max = self.folers[random_key][0]
+        self.is_music = self.folers[random_key][1]
+        print(f"random_key：{random_key}, idx_max：{self.idx_max}, is_music：{self.is_music}")
+        
+        
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.dragStartPosition = event.globalPos() - self.frameGeometry().topLeft()
@@ -149,9 +205,33 @@ class Pix(QMainWindow):
             painter.drawPixmap(0, 0, self.pixmap)
             
     def on_button_click(self):
-        input_text = self.text_input.text()
-        self.text_input.clear()
-        # 创建线程并执行
-        self.thread = AIThread(input_text, self.ai,self.tts,self.player1,self.tts_path)
-        self.thread.start()
+        if self.text_input.text()!= "":
+            input_text = self.text_input.text()
+            self.text_input.clear()
+            # 创建线程并执行
+            self.thread = AIThread(input_text, self.ai,self.tts,self.player1,self.tts_path)
+            self.thread.start()
+        else:
+            print("输入不能为空")
 
+    def read_file_folders(self):
+        png_count_dict = {}
+        # 遍历基本文件夹中的所有子文件夹
+        for folder_name in os.listdir(self.image_path_base):
+            folder_path = os.path.join(self.image_path_base, folder_name)
+            
+            # 确保这是一个目录
+            if os.path.isdir(folder_path):
+                # 统计该文件夹中的 PNG 图片数量
+                png_count = 0
+                is_music = False
+                for file in os.listdir(folder_path):
+                    if file.endswith('.png'):
+                        png_count += 1
+                        
+                    if file == "music.wav":
+                        is_music = True
+                # 将文件夹名和对应的 PNG 数量存入字典
+                png_count_dict[folder_name] = [png_count,is_music]
+
+        return png_count_dict
