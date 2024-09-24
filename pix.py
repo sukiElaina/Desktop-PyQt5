@@ -45,17 +45,21 @@ class Pix(QMainWindow):
 
         self.text_input = QLineEdit(self)  # 创建文本输入框并设置默认内容
         self.text_input.setPlaceholderText("你想对芙宁娜说什么？")  # 设置提示文字
-        self.text_input.setGeometry(350, 10, 150, 35)  # 设置文本框的位置和大小
+        self.text_input.setGeometry(350, 10, 230, 35)  # 设置文本框的位置和大小
         self.text_input.setFont(myfont)  # 设置字体和大小
 
         # 设置基本属性
         self.timer = QTimer(self)
         self.idx = 1
         self.idx_max = 625
-        self.image_path_base = "E:\\Computer\\Desktop\\static\\movies"
+        # 将 tts_path 设置为当前程序所处文件夹
+        self.tts_path = os.getcwd()
+        self.image_path_base = os.path.join(self.tts_path, "static\\movies")
         self.image_path = os.path.join(self.image_path_base, "initial")
-        self.tts_path = "E:\\Computer\\Desktop"
+        
         self.player = QMediaPlayer(self)
+        self.player_default_volume = 60  # 设置默认音量大小
+        self.player.setVolume(self.player_default_volume)  # 设置默认音量
         self.player1 = QMediaPlayer(self)
         self.ai = AIRequest()
         self.tts = TTSRequest()
@@ -125,10 +129,10 @@ class Pix(QMainWindow):
         # 检查 player1 是否在播放
         if self.player1.state() == QMediaPlayer.PlayingState:
             # player1 正在播放，减少 player 的音量为一半
-            self.player.setVolume(50)  # 假设默认音量为 100，设置为 50
+            self.player.setVolume(self.player_default_volume / 2)  # 假设默认音量为 100，设置为 50
         else:
             # player1 没有播放，还原 player 的音量
-            self.player.setVolume(100)  # 还原到默认音量
+            self.player.setVolume(self.player_default_volume)  # 还原到默认音量
 
     def play_music(self):
         if self.is_music:
