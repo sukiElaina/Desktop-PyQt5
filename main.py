@@ -4,8 +4,8 @@ from PyQt5.QtWidgets import QApplication
 import sys
 import subprocess
 if __name__ == "__main__":
-    bat_file_path = r"E:\Computer\miHoYo-Inference\!启动!.bat"
-    subprocess.run([bat_file_path], shell=True)
+    # bat_file_path = r"E:\Computer\miHoYo-Inference\!启动!.bat"
+    # subprocess.run([bat_file_path], shell=True)
     app = QApplication(sys.argv)
     window = Pix()
     window.show()
