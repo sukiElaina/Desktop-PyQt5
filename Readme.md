@@ -47,3 +47,4 @@ PS：一定要在当前文件夹下创建`视频文件名`这个文件夹，然�
 ![alt text](image/Readme/image-7.png)
 
 启动完成后再在python中运行`main.py`文件，本人是在vscode中直接运行。
+![alt text](image/Readme/image-8.png)

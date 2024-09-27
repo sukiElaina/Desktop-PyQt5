@@ -6,3 +6,4 @@ config.json
 output.wav
 build
 dist
+*.spec
