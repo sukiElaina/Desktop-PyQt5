@@ -31,7 +31,7 @@ class AIThread(QThread):
 class Pix(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon("E:\\Computer\\Desktop\\static\\icon.png"))  # 设置窗口图标
+        self.setWindowIcon(QIcon(os.getcwd() + "\\static\\icon.png"))  # 设置窗口图标
         self.setWindowTitle("Pix")  # 设置窗口标题
         self.resize(800, 600)  # 设置窗口大小
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool)  # 设置窗口置顶
