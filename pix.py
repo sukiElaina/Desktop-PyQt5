@@ -22,8 +22,7 @@ class AIThread(QThread):
         self.response = self.ai_request.get_Response(self.input_text)
         # 请求完成后，获取响应并处理
         reply = self.response
-        # 发送信号给主线程
-        self.reply_signal.emit(reply)
+        
         # 调用 TTS 请求并播放声音
         self.tts.TTSwrite(reply)
         # 清除任何已设置的媒体
@@ -31,7 +30,8 @@ class AIThread(QThread):
         media_content = QMediaContent(QUrl.fromLocalFile(os.path.join(self.tts_path, "output.wav")))
         self.player1.setMedia(media_content)
         self.player1.play()
-        
+        # 发送信号给主线程
+        self.reply_signal.emit(reply)
         
 class Pix(QMainWindow):
     def __init__(self):
@@ -62,11 +62,18 @@ class Pix(QMainWindow):
         self.reply_display.setFont(myfont)  # 设置字体
         self.reply_display.setReadOnly(True)  # 设置为只读
         # 在初始化时可以设置一个初始的背景图
-        initial_image_path = (os.getcwd() + "\\static\\reply_bg.png").replace("\\", "/")
-        
-        self.reply_display.setStyleSheet(f"QTextEdit {{background-image: url({initial_image_path}); border: none;}}")
-
-
+        initial_image_path = (os.getcwd() + "\\static\\reply_bg.png")
+        initial_image_path = initial_image_path.replace("\\", "/")  # 路径中不能有反斜杠
+        # 设置背景图片、透明和内边距
+        self.reply_display.setStyleSheet(f"""
+            QTextEdit {{
+                background-image: url({initial_image_path});
+                border: none;
+                padding: 0 30px;  /* 增加内边距来适应气泡，一个参数就是上下左右同参数，两个参数就是上下同参数，左右同参数 */
+                selection-background-color: lightblue;  /* 可选：选中文本的背景色 */
+                selection-color: white;  /* 可选：选中文本的颜色 */
+            }}
+        """)
         # 设置基本属性
         self.timer = QTimer(self)
         self.idx = 1
