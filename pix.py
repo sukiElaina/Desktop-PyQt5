@@ -158,6 +158,7 @@ class Pix(QMainWindow):
         # 将这些选项添加到偏好设置子菜单
         preference_menu.addAction(self.text_input_action)
         preference_menu.addAction(self.button_action)
+        preference_menu.addAction(self.reply_display_action)
 
         # 将菜单添加到系统托盘
         tray_menu.addAction(hide_action)
