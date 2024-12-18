@@ -39,8 +39,8 @@ class Pix(QMainWindow):
         self.setWindowIcon(QIcon(os.getcwd() + "\\static\\icon.png"))  # 设置窗口图标
         self.setWindowTitle("Pix")  # 设置窗口标题
         self.resize(1280, 720)  # 设置窗口大小
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool)  # 设置窗口置顶
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint | Qt.Tool)  # 设置窗口置顶
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setMouseTracking(True)
         myfont = QFont("华文新魏", 10)  # 设置字体和大小
         # 创建按钮和文本输入框
@@ -104,7 +104,7 @@ class Pix(QMainWindow):
         self.button_greater.clicked.connect(self.pixmap_scale_greater)
         self.button_less.clicked.connect(self.pixmap_scale_less)
 
-        self.timer.setInterval(32)
+        self.timer.setInterval(70)
         self.timer.timeout.connect(self.movie_timer)
         self.timer.start()
         
@@ -217,10 +217,10 @@ class Pix(QMainWindow):
         if self.movie_state != 1:
             self.movie_state = 1
         
-        if self.idx == 1:
+        if self.idx == 1 or self.idx == 2:
             self.play_music()
 
-        if self.idx == self.idx_max:
+        if self.idx == self.idx_max or self.idx == self.idx_max - 1:
             self.stop_music()
 
         self.idx = self.idx % self.idx_max + 1
@@ -233,7 +233,7 @@ class Pix(QMainWindow):
                 self.movie_state = 1
             if self.idx == 1 and self.is_music:
                 self.play_music()
-            self.idx = self.idx% self.idx_max + 1
+            self.idx = self.idx% self.idx_max + 2
             self.pixmap = QPixmap(os.path.join(self.image_path, f"{self.idx}.png"))
             self.update()
         else:
